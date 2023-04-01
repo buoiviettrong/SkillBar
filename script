@@ -1,171 +1,160 @@
-const _PlayerName = Player.Name();
-let _PlayerClass = '';
-const matrixSkill_ID = {
-    warrior: ['0', '1', '2', '3', '8', '17', '18', '19', '20', '21', '33', '34', '39', '40', '41', '46', '50'],
-    shaman: ['0', '6', '7', '8', '12', '13', '28', '30', '35', '36', '37', '39', '40', '42', '43', '47'],
-    mage: ['4', '8', '14', '15', '16', '22', '23', '24', '32', '39', '40', '51', '52', '53'],
-    archer: ['5', '8', '9', '10', '11', '25', '26', '27', '29', '31', '38', '39', '40', '45', '48', '49', '54']
-}
-document.addEventListener('keydown', async (e) => {
-    if(e.code == 'KeyK') {
-        setTimeout(getPresetChooses, 200);
-        setTimeout(addEditSkillPresetBtn , 100);  
-        const sk5 = document.getElementById('sk4');
-    }
-});
-const addEditSkillPresetBtn = () => {
-  const btns = document.getElementsByClassName('presetbuttons')[0];
-  btns.style.gridTemplateColumns = "60px 60px 60px 60px";
-  const html = `<div class="btn grey disabled" id="presetedit">Edit</div>`;
-  UI.Append(btns, html);
-};
-const getSkillPreset = async (name) => {
-  const res = await Player.Class(_PlayerName);
-  _PlayerClass = res.type;
-  const skillPresets = JSON.parse(localStorage.getItem("scout-skillpresets"));
-  const skillPresetByClass = skillPresets[_PlayerClass];
-  const skillPresetByName = skillPresetByClass.filter(item => item.name == name)[0];
-  const skillData = skillPresetByName.data;
-  const skill_IDs = [];
-  skill_IDs.push(matrixSkill_ID[_PlayerClass][0])
-  for(let i = 1, size = skillData.length; i < size; i++) {
-    if(skillData[i] != 0) skill_IDs.push(matrixSkill_ID[_PlayerClass][i]);  
-  } 
- return skill_IDs;
-}
-const setEditSkillPreset = (name) => {
-  console.log(name);
-}
-const loadSkillPreset = async (name) => {
-  name = await name;
-  if(name == null) return;
-  const skill_ID = await getSkillPreset(name);
-  const skill_bar= document.getElementById('skillbar');
-  
-  const skill_child = skill_bar.children;
-  let charmSize = 0; 
-  let runeSize = 0;
-  let pet_mountSize = 0;
-  let miscSize = 0;
-  for(var el of skill_child ) {
-    const img = el.getElementsByTagName('img')[0];
-    let src = img.src;    	
-    const isCharm = src.indexOf('charm');
-    const isRune = name != 'farm' ? -1: src.indexOf('rune');
-    const isPetOrMount = src.indexOf('pet') + src.indexOf('mount');
-    const isMisc = src.indexOf('misc');
-    const baseStr = 'https://hordes.io/assets/ui/skills/';
-    src = src.replace(baseStr, "");
-    const pos = src.indexOf('.');
-    let val = src.slice(0, pos);
-    val = val.replace('_grey', '');
-    if(!skill_ID.includes(val) && isCharm < 0 && isRune < 0 && isPetOrMount < 0 && isMisc < 0) {
-       el.style.display = 'none';
-    }
-    else {
-      el.style.display = 'block';  
-      if(isCharm > 0) {
-        charmSize ++
-        el.style.position = 'absolute';
-        el.style.top = '-50px';
-        el.style.left = `${40*(charmSize-1) + 2*(charmSize-1)}px`;
-        el.style.border = '2px solid';
-        el.style.margin = '2px';
-      }
-      if(isRune > 0) {
-        runeSize ++
-        el.style.position = 'absolute';
-        el.style.top = '-50px';
-        el.style.left = `${300 + 40*(runeSize -1) + 2*(runeSize -1)}px`;
-        el.style.border = '2px solid';
-        el.style.margin = '2px';
-      }
-      if(isPetOrMount > 0) {
-        pet_mountSize ++
-        el.style.position = 'absolute';
-        el.style.top = '-100px';
-        el.style.left = `${40*(pet_mountSize -1) + 2*(pet_mountSize -1)}px`;
-        el.style.border = '2px solid';
-        el.style.margin = '2px';
-      }
-      if(isMisc > 0) {
-        miscSize ++
-        el.style.position = 'absolute';
-        el.style.top = '-100px';
-        el.style.left = `${100 + 40*(miscSize -1) + 2*(miscSize -1)}px`;
-        el.style.border = '2px solid';
-        el.style.margin = '2px';
-      }
-    }
-  }
-  const size = skill_ID.length;
-  skill_bar.style.gridTemplateColumns = `repeat(${size}, auto)`;
-  let currentSkillName = JSON.parse(localStorage.getItem('currentSkillName'));
-    if(currentSkillName  == null) {
-          currentSkillName = {};
-          currentSkillName[_PlayerClass] = '';
-    }
-    currentSkillName[_PlayerClass] = name;
-    localStorage.setItem("currentSkillName", JSON.stringify(currentSkillName));
-};
+ const _PlayerName = Player.Name();
+ let _PlayerClass = '';
+ const matrixSkill_ID = {
+ 	warrior: ['0', '1', '2', '3', '8', '17', '18', '19', '20', '21', '33', '34', '39', '40', '41', '46', '50'],
+ 	shaman: ['0', '6', '7', '8', '12', '13', '28', '30', '35', '36', '37', '39', '40', '42', '43', '47'],
+ 	mage: ['4', '8', '14', '15', '16', '22', '23', '24', '32', '39', '40', '51', '52', '53'],
+ 	archer: ['5', '8', '9', '10', '11', '25', '26', '27', '29', '31', '38', '39', '40', '45', '48', '49', '54']
+ }
+ const UI_Style = (el, top, size, baseleft) => {
+ 	el.style.position = 'absolute';
+ 	el.style.top = `${top}px`;
+ 	el.style.left = `${baseleft + 40*(size -1) + 2*(size -1)}px`;
+ 	el.style.border = '2px solid';
+ 	el.style.margin = '1px';
+ }
+ document.addEventListener('keydown', async (e) => {
+ 	if (e.code == 'KeyK') {
+ 		setTimeout(getPresetChooses, 200);
+ 		setTimeout(addEditSkillPresetBtn, 100);
+ 		const sk5 = document.getElementById('sk4');
+ 	}
+ });
+ const addEditSkillPresetBtn = () => {
+ 	const btns = document.getElementsByClassName('presetbuttons')[0];
+ 	btns.style.gridTemplateColumns = "60px 60px 60px 60px";
+ 	const html = `<div class="btn grey disabled" id="presetedit">Edit</div>`;
+ 	UI.Append(btns, html);
+ };
+ const getSkillPreset = async (name) => {
+ 	const res = await Player.Class(_PlayerName);
+ 	_PlayerClass = res.type;
+ 	const skillPresets = JSON.parse(localStorage.getItem("scout-skillpresets"));
+ 	const skillPresetByClass = skillPresets[_PlayerClass];
+ 	const skillPresetByName = skillPresetByClass.filter(item => item.name == name)[0];
+ 	const skillData = skillPresetByName.data;
+ 	const skill_IDs = [];
+ 	skill_IDs.push(matrixSkill_ID[_PlayerClass][0])
+ 	for (let i = 1, size = skillData.length; i < size; i++) {
+ 		if (skillData[i] != 0) skill_IDs.push(matrixSkill_ID[_PlayerClass][i]);
+ 	}
+ 	return skill_IDs;
+ }
+ const setEditSkillPreset = (name) => {
+ 	console.log(name);
+ }
+ const loadSkillPreset = async (name) => {
+ 	name = await name;
+ 	if (name == null) return;
+ 	const skill_ID = await getSkillPreset(name);
+ 	const skill_bar = document.getElementById('skillbar');
 
-const getPresetChooses = async () => {
-  document.querySelectorAll('.presetbox').forEach(el => {
-    const skillPresetName = el.children[1].innerText;
-    el.addEventListener('click', (e) => {
-      const name = skillPresetName;
-      const editbtn = document.getElementById('presetedit');
-      editbtn.classList.remove('disabled');
-      var new_element = editbtn.cloneNode(true);
-      editbtn.parentNode.replaceChild(new_element, editbtn);
-      new_element.addEventListener('click', (e) => editPresetSkill(name));
-    }); 
-    const enable = el.children[2].children[0];
-    enable.addEventListener('click', (e) => loadSkillPreset(`${skillPresetName}`));
-  })
-}
-const editPresetSkill = async  (name) => {
-  const skillbarInStorage = JSON.parse(localStorage.getItem("skillBar_Storage"));
-  const skillbarInStorage_Class = skillbarInStorage[_PlayerClass];
-  const result = skillbarInStorage_Class.filter(item => item.name == name)[0];
-  let skill_ID;
-  if(result == null) skill_ID = await getSkillPreset(name);
+ 	const skill_child = skill_bar.children;
+ 	let charmSize = 0;
+ 	let runeSize = 0;
+ 	let pet_mountSize = 0;
+ 	let miscSize = 0;
+ 	for (var el of skill_child) {
+ 		const img = el.getElementsByTagName('img')[0];
+ 		let src = img.src;
+ 		const isCharm = src.indexOf('charm');
+ 		const isRune = name != 'farm' ? -1 : src.indexOf('rune');
+ 		const isPetOrMount = src.indexOf('pet') + src.indexOf('mount');
+ 		const isMisc = src.indexOf('misc');
+ 		const baseStr = 'https://hordes.io/assets/ui/skills/';
+ 		src = src.replace(baseStr, "");
+ 		const pos = src.indexOf('.');
+ 		let val = src.slice(0, pos);
+ 		val = val.replace('_grey', '');
+ 		if (val !== 40 && !skill_ID.includes(val) && isCharm < 0 && isRune < 0 && isPetOrMount < 0 && isMisc < 0) {
+ 			el.style.display = 'none';
+ 		} else {
+ 			el.style.display = 'block';
+ 			if (isCharm > 0) {
+ 				charmSize++
+ 				UI_Style(el, -50, charmSize, 0);
+ 			}
+ 			if (isRune > 0) {
+ 				runeSize++
+ 				UI_Style(el, -50, runeSize, 300);
+ 			}
+ 			if (isPetOrMount > 0) {
+ 				pet_mountSize++
+ 				UI_Style(el, -100, pet_mountSize, 0);
+ 			}
+ 			if (isMisc > 0) {
+ 				miscSize++;
+ 				UI_Style(el, -100, miscSize, 300);
+ 			}
+ 		}
+ 	}
+ 	const size = skill_ID.length;
+ 	skill_bar.style.gridTemplateColumns = `repeat(${size}, auto)`;
+ 	let currentSkillName = JSON.parse(localStorage.getItem('currentSkillName'));
+ 	if (currentSkillName == null) {
+ 		currentSkillName = {};
+ 		currentSkillName[_PlayerClass] = '';
+ 	}
+ 	currentSkillName[_PlayerClass] = name;
+ 	localStorage.setItem("currentSkillName", JSON.stringify(currentSkillName));
+ };
 
-  openEditModal(skill_ID);
-  //localStorage.setItem("", skillBar_Storage);
-}
-const createSkillStorage = async () => {
-  let storage = JSON.parse(localStorage.getItem("skillBar_Storage"));
-  if(storage == null) storage = {};
-  if(storage[_PlayerClass] == null) {
-    storage[_PlayerClass] = [];
-    localStorage.setItem('skillBar_Storage', JSON.stringify(storage));
-  }
-}
+ const getPresetChooses = async () => {
+ 	document.querySelectorAll('.presetbox').forEach(el => {
+ 		const skillPresetName = el.children[1].innerText;
+ 		el.addEventListener('click', (e) => {
+ 			const name = skillPresetName;
+ 			const editbtn = document.getElementById('presetedit');
+ 			editbtn.classList.remove('disabled');
+ 			var new_element = editbtn.cloneNode(true);
+ 			editbtn.parentNode.replaceChild(new_element, editbtn);
+ 			new_element.addEventListener('click', (e) => editPresetSkill(name));
+ 		});
+ 		const enable = el.children[2].children[0];
+ 		enable.addEventListener('click', (e) => loadSkillPreset(`${skillPresetName}`));
+ 	})
+ }
+ const editPresetSkill = async (name) => {
+ 	const skillbarInStorage = JSON.parse(localStorage.getItem("skillBar_Storage"));
+ 	const skillbarInStorage_Class = skillbarInStorage[_PlayerClass];
+ 	const result = skillbarInStorage_Class.filter(item => item.name == name)[0];
+ 	let skill_ID;
+ 	if (result == null) skill_ID = await getSkillPreset(name);
 
-const openEditModal = (skill_IDs) => {
-}
-createSkillStorage();
-const currentSkillSetting = async () => {
-  const res = await Player.Class(_PlayerName);
-  _PlayerClass = res.type;
-  const currentSkillNameStorage = JSON.parse(localStorage.getItem("currentSkillName"));
-  if(currentSkillNameStorage == null) return null;
-  return currentSkillNameStorage[_PlayerClass];
-}
-loadSkillPreset(currentSkillSetting())
-const add_ResetSkillBtn = () => {
-  const btn = document.getElementsByClassName('btnbar')[0];
-  UI.Append(btn, `<div id="resetskillbar" class="btn border black" style="width: 16px;text-align: center;">R</div>`);
-  const r = document.getElementById('resetskillbar');
-  r.addEventListener('click', (e) => {
-    const skillbar = document.getElementById('skillbar');
-    for( var i of skillbar.children) {
-       i.style = 'none';
-       i.style.display = 'block';
-    }
-    skillbar.style.gridTemplateColumns = `repeat(15, auto)`;
-    localStorage.removeItem("currentSkillName");
-  });
-}
-add_ResetSkillBtn();
+ 	openEditModal(skill_ID);
+ 	//localStorage.setItem("", skillBar_Storage);
+ }
+ const createSkillStorage = async () => {
+ 	let storage = JSON.parse(localStorage.getItem("skillBar_Storage"));
+ 	if (storage == null) storage = {};
+ 	if (storage[_PlayerClass] == null) {
+ 		storage[_PlayerClass] = [];
+ 		localStorage.setItem('skillBar_Storage', JSON.stringify(storage));
+ 	}
+ }
+
+ const openEditModal = (skill_IDs) => {}
+ createSkillStorage();
+ const currentSkillSetting = async () => {
+ 	const res = await Player.Class(_PlayerName);
+ 	_PlayerClass = res.type;
+ 	const currentSkillNameStorage = JSON.parse(localStorage.getItem("currentSkillName"));
+ 	if (currentSkillNameStorage == null) return null;
+ 	return currentSkillNameStorage[_PlayerClass];
+ }
+ loadSkillPreset(currentSkillSetting())
+ const add_ResetSkillBtn = () => {
+ 	const btn = document.getElementsByClassName('btnbar')[0];
+ 	UI.Append(btn, `<div id="resetskillbar" class="btn border black" style="width: 16px;text-align: center;">R</div>`);
+ 	const r = document.getElementById('resetskillbar');
+ 	r.addEventListener('click', (e) => {
+ 		const skillbar = document.getElementById('skillbar');
+ 		for (var i of skillbar.children) {
+ 			i.style = 'none';
+ 			i.style.display = 'block';
+ 		}
+ 		skillbar.style.gridTemplateColumns = `repeat(15, auto)`;
+ 		localStorage.removeItem("currentSkillName");
+ 	});
+ }
+ add_ResetSkillBtn();
