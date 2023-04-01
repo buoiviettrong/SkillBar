@@ -5,7 +5,7 @@ What it do ? just fun.
 
 ## Require: 
 - (you need tampermonkey or greasemonkey extension) 
-- Ruin UI: ruinui.bau.gg
+- Ruin UI: https://ruinui.bau.gg
 - Scout UI: https://github.com/Desk1/ScoutUI/raw/master/userscript.user.js 
 
 ## install script
