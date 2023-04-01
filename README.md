@@ -8,6 +8,10 @@ What it do ? just fun.
 - Ruin UI: ruinui.bau.gg
 - Scout UI: https://github.com/Desk1/ScoutUI/raw/master/userscript.user.js 
 
+## install script
+in Setting -> JS Customizer -> Copy text in file "Script" and pass them in box (remember check Eval Usage) then "Apply Custom JS"
+![image](https://user-images.githubusercontent.com/83491342/229288497-d09ab9eb-2562-47a3-80b6-ef93f8149b79.png)
+
 ## How to use
 1. First: You need create Skill preset by Scout UI
 ![image](https://user-images.githubusercontent.com/83491342/229288085-58d504e9-5d2f-47f2-a370-9582d99d2f6a.png)
