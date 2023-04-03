@@ -17,6 +17,7 @@ const matrixSkill_ID = {
 document.addEventListener('keydown', async (e) => {
 	if (e.code == 'KeyK') {
 		setTimeout(getPresetChooses, 200);
+
 	}
 });
 const getSkillPreset = async (name) => {
@@ -182,8 +183,12 @@ const styleElement = (el, top, size, baseleft, display, flg) => {
 	el.style.display = display;
 }
 const getPresetChooses = async () => {
+	const deleteBtn = document.getElementById('presetdelete');
 	document.querySelectorAll('.presetbox').forEach(el => {
 		const skillPresetName = el.children[1].innerText;
+		el.addEventListener('click', e => {
+			deleteBtn.addEventListener('click', e => deletePresetSettings(`${skillPresetName}`));
+		});
 		const enable = el.children[2].children[0];
 		enable.addEventListener('click', (e) => loadSkillPreset(`${skillPresetName}`));
 	})
@@ -195,7 +200,13 @@ const currentSkillSetting = async () => {
 	if (currentSkillNameStorage == null) return null;
 	return currentSkillNameStorage[_PlayerClass];
 }
-loadSkillPreset(currentSkillSetting())
+const FirstLoad = async () => {
+	const current = await currentSkillSetting();
+	const settings = getSettings();
+	if (settings == null || settings[_PlayerName] == null || settings[_PlayerName][current] == null) return;
+	loadSkillPreset(current);
+}
+FirstLoad();
 const add_ResetSkillBtn = () => {
 	const btn = document.getElementsByClassName('btnbar')[0];
 	const html = `<div id="resetskillbar" class="btn border black" style="width: 16px;text-align: center;">R</div>`;
@@ -212,3 +223,13 @@ const add_ResetSkillBtn = () => {
 	});
 }
 add_ResetSkillBtn();
+
+const deletePresetSettings = (name) => {
+	let settings = getSettings();
+	const t = settings[_PlayerName];
+	delete t[name];
+	settings[_PlayerName] = t;
+	const currentName = getCurrentSkillName();
+	delete currentName[_PlayerClass];
+	localStorage.setItem('skillBar_Settings', JSON.stringify(settings));
+}
