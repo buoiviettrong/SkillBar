@@ -8,18 +8,14 @@ var G_skillbar_element = {
 }
 const _PlayerName = Player.Name();
 let _PlayerClass = '';
+
 const matrixSkill_ID = {
 	warrior: ['0', '1', '2', '3', '8', '17', '18', '19', '20', '21', '33', '34', '39', '40', '41', '46', '50'],
 	shaman: ['0', '6', '7', '8', '12', '13', '28', '30', '35', '36', '37', '39', '40', '42', '43', '47'],
 	mage: ['4', '8', '14', '15', '16', '22', '23', '24', '32', '39', '40', '51', '52', '53'],
 	archer: ['5', '8', '9', '10', '11', '25', '26', '27', '29', '31', '38', '39', '40', '45', '48', '49', '54']
 }
-document.addEventListener('keydown', async (e) => {
-	if (e.code == 'KeyK') {
-		setTimeout(getPresetChooses, 200);
 
-	}
-});
 const getSkillPreset = async (name) => {
 	const res = await Player.Class(_PlayerName);
 	_PlayerClass = res.type;
@@ -45,16 +41,11 @@ const setCurrentSkillName = async (name) => {
 const loadSkillPreset = async (name) => {
 	name = await name;
 	await setCurrentSkillName(name);
-
 	if (name == null) return;
-	await loadElement();
-	addStyle(name, G_skillbar_element.skills, 'skill', false);
-	addStyle(name, G_skillbar_element.charms, 'charm', true);
-	addStyle(name, G_skillbar_element.runes, 'rune', true);
-	addStyle(name, G_skillbar_element.petMount, 'petMount', true);
-	addStyle(name, G_skillbar_element.misc, 'misc', true);
-	addStyle(name, G_skillbar_element.other, 'other');
 
+	const skillBar = document.getElementById('skillbar');
+	await loadElement(name);
+	await loadElement(name);
 }
 const sliceSkill = (s) => {
 	let src = s;
@@ -76,6 +67,8 @@ const getCurrentSkillNameByClass = async () => {
 	return CurrentSkillName[_PlayerClass];
 }
 const loadElement = async (type) => {
+	const skillBar = document.getElementById('skillbar');
+	const children = skillBar.children;
 	let skillbar_element = {
 		skills: [],
 		charms: [],
@@ -84,45 +77,30 @@ const loadElement = async (type) => {
 		misc: [],
 		other: []
 	}
-	const skillBar = document.getElementById('skillbar');
-	const skillBarChilds = skillBar.children;
+	let skillSize = 0,
+		charmSize = 0,
+		miscSize = 0,
+		runeSize = 0,
+		petSize = 0;
+	name = await getCurrentSkillNameByClass();
 	const skillIDs = await getSkillPreset(await getCurrentSkillNameByClass());
-	for (var el of skillBarChilds) {
+	for (var el of children) {
 		const img_ = el.getElementsByTagName('img');
 		for (var img of img_) {
 			let src = img.src;
-			if (src.indexOf('charm') > 0) skillbar_element['charms'].push(el);
-			else if (src.indexOf('rune') > 0) skillbar_element['runes'].push(el);
+			if (src.indexOf('charm') > 0) addStyle(el, name, 'charm', true, charmSize++);
+			else if (src.indexOf('rune') > 0) addStyle(el, name, 'rune', true, runeSize++);
 			else if ((src.indexOf('pet') + src.indexOf('mount')) > 0)
-				skillbar_element['petMount'].push(el);
-			else if (src.indexOf('misc') > 0) skillbar_element['misc'].push(el);
+				addStyle(el, name, 'petMount', true, petSize++);
+			else if (src.indexOf('misc') > 0) addStyle(el, name, 'misc', true, miscSize++);
 			else {
 				const val = sliceSkill(src);
-				if (skillIDs.includes(val) || val == '40') skillbar_element['skills'].push(el);
-				else skillbar_element['other'].push(el);
+				if (skillIDs.includes(val) || val == '40') addStyle(el, name, 'skill', false, skillSize++);
+				else addStyle(el, name, 'other', false, 0);
 			}
 		}
 	}
-	switch (type) {
-		case "pet":
-			G_skillbar_element.petMount = skillbar_element.petMount;
-			break;
-		case "skill":
-			G_skillbar_element.skills = skillbar_element.skills;
-			break;
-		case "misc":
-			G_skillbar_element.misc = skillbar_element.misc;
-			break;
-		case "rune":
-			G_skillbar_element.runes = skillbar_element.runes;
-			break;
-		case "charm":
-			G_skillbar_element.charms = skillbar_element.charms;
-			break;
-		default:
-			G_skillbar_element = skillbar_element;
-			break;
-	}
+	skillBar.style.gridTemplateColumns = `repeat(${skillSize + 1}, auto)`;
 }
 const getSettings = () => {
 	return JSON.parse(localStorage.getItem('skillBar_Settings'));
@@ -162,15 +140,14 @@ const createSettings = (presetName) => {
 	localStorage.setItem('skillBar_Settings', JSON.stringify(skillBar_Settings));
 }
 // type : ['skill', 'charm', 'rune', 'pet', 'misc', 'other']
-const addStyle = (name, arr, type, flg) => {
+const addStyle = (el, name, type, flg, i) => {
 	let settings = getSettings();
 	if (settings == null || settings[_PlayerName] == null || settings[_PlayerName][name] == null) {
 		createSettings(name);
 		settings = getSettings();
 	}
 	const settingsByType = settings[_PlayerName][name][type];
-	for (var i = 0, size = arr.length; i < size; i++)
-		styleElement(arr[i], settingsByType.top, i + 1, settingsByType.baseleft, settingsByType.display, flg);
+	styleElement(el, settingsByType.top, i + 1, settingsByType.baseleft, settingsByType.display, flg);
 }
 const styleElement = (el, top, size, baseleft, display, flg) => {
 	if (flg == true) {
@@ -179,7 +156,7 @@ const styleElement = (el, top, size, baseleft, display, flg) => {
 		el.style.margin = '1px';
 	}
 	if (top !== null) el.style.top = `${top}%`;
-	if (top !== null) el.style.left = `${baseleft + 40*(size -1) + 2*(size -1)}px`;
+	if (top !== null) el.style.left = `${baseleft + (el.offsetWidth+1)*(size -1) + 2*(size -1)}px`;
 	el.style.display = display;
 }
 const getPresetChooses = async () => {
@@ -188,6 +165,11 @@ const getPresetChooses = async () => {
 		const skillPresetName = el.children[1].innerText;
 		el.addEventListener('click', e => {
 			deleteBtn.addEventListener('click', e => deletePresetSettings(`${skillPresetName}`));
+			const editbtn = document.getElementById('presetedit');
+			editbtn.classList.remove('disabled');
+			var new_element = editbtn.cloneNode(true);
+			editbtn.parentNode.replaceChild(new_element, editbtn);
+			new_element.addEventListener('click', (e) => openEditPresetSkillModal(skillPresetName));
 		});
 		const enable = el.children[2].children[0];
 		enable.addEventListener('click', (e) => loadSkillPreset(`${skillPresetName}`));
@@ -222,8 +204,6 @@ const add_ResetSkillBtn = () => {
 		localStorage.removeItem("currentSkillName");
 	});
 }
-add_ResetSkillBtn();
-
 const deletePresetSettings = (name) => {
 	let settings = getSettings();
 	const t = settings[_PlayerName];
@@ -233,3 +213,193 @@ const deletePresetSettings = (name) => {
 	delete currentName[_PlayerClass];
 	localStorage.setItem('skillBar_Settings', JSON.stringify(settings));
 }
+const addEditSkillPresetBtn = () => {
+	const btns = document.getElementsByClassName('presetbuttons')[0];
+	btns.style.gridTemplateColumns = "60px 60px 60px 60px";
+	const html = `<div class="btn grey disabled" id="presetedit">Edit</div>`;
+	UI.Append(btns, html);
+};
+const openEditPresetSkillModal = (name) => {
+	loadSkillPreset(name);
+	if ($(`.r2_syseditpresetskill`).is(":visible")) {
+		$(`.r2_syseditpresetskill`).hide();
+		$(`.r2_syseditpresetskill`).show();
+	} else {
+		$(`.r2_syseditpresetskill`).show();
+	}
+	document.getElementById('name').innerText = name;
+	if (getSettings() == null || getSettings()[_PlayerName] == null || getSettings()[_PlayerName][name] == null) createSettings(name);
+	const settings = getSettings()[_PlayerName][name];
+	const checkboxs = document.getElementsByClassName('btn checkbox editpreset');
+	const lefts = document.getElementsByClassName('editinput left');
+	const tops = document.getElementsByClassName('editinput top');
+	for (let i = 0, size = checkboxs.length; i < size; i++) {
+		checkboxs[i].checked = settings[checkboxs[i].id].display == 'block' ? true : false;
+		lefts[i].value = settings[lefts[i].id].baseleft;
+		tops[i].value = settings[tops[i].id].top;
+		var new_element = clone(checkboxs[i]);
+		var new_left = clone(lefts[i]);
+		var new_top = clone(tops[i]);
+		new_element.addEventListener('click', (e) => checkItem(name, checkboxs[i].id, checkboxs[i].checked));
+		new_left.addEventListener('focusout', (e) => changeValue(name, lefts[i].id, lefts[i].value, 'baseleft'));
+		new_top.addEventListener('focusout', (e) => changeValue(name, tops[i].id, tops[i].value, 'top'));
+	}
+}
+const clone = (el) => {
+	var new_element = el.cloneNode(true);
+	el.parentNode.replaceChild(new_element, el);
+	return new_element;
+}
+//type : baseleft or top;
+const changeValue = (name, id, value, type) => {
+	const settings = getSettings();
+	settings[_PlayerName][name][id][type] = parseInt(value);
+	localStorage.setItem('skillBar_Settings', JSON.stringify(settings));
+	loadSkillPreset(name);
+	loadSkillPreset(name);
+}
+const checkItem = (name, id, flg) => {
+	const settings = getSettings();
+	settings[_PlayerName][name][id].display = flg == true ? 'block' : 'none';
+	localStorage.setItem('skillBar_Settings', JSON.stringify(settings));
+	loadSkillPreset(name);
+	loadSkillPreset(name);
+}
+const buildData = {
+	name: `Edit Preset Skill`,
+	element: "mainMenuButton",
+	id: "syseditpresetskill",
+	cls: "r2_syseditpresetskill",
+	nx: "edit_preset_skill",
+	base: "windowPanel",
+	close: Classes.closefeature,
+	internal: "innerPartySignup",
+	btn: "L",
+	position: {
+		top: 150,
+		left: 150
+	},
+	modable: true,
+	size: {
+		width: 0,
+		height: 0
+	},
+	resize: true
+}
+const h = `<div class="settings">
+  <div class="textprimary bartenderpacer" id="name">adsad</div>
+  <table class="marg-top panel-black playerlist" style="min-width: 320px;">
+    <tr>
+      <td>
+        <div class="divruindiv"> Rune <br />
+          <small class="textgrey">hide/show rune bar</small>
+        </div>
+      </td>
+      <td>
+        <input class="btn checkbox editpreset rune" id="rune" type='checkbox' style="width: 20px; height: 20px">
+      </td>
+    <tr>
+      <td>
+        <small class="textgrey">left postions</small>
+      </td>
+      <td>
+        <input class="editinput left" id="rune" type='number'>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <small class="textgrey">top postions</small>
+      </td>
+      <td>
+        <input class="editinput top" id="rune" type='number'>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div class="divruindiv"> Charm <br />
+          <small class="textgrey">hide/show charm bar</small>
+        </div>
+      </td>
+      <td>
+        <input class="btn checkbox editpreset rune" id="charm" type='checkbox' style="width: 20px; height: 20px">
+      </td>
+    <tr>
+      <td>
+        <small class="textgrey">left postions</small>
+      </td>
+      <td>
+        <input class="editinput left" id="charm" type='number'>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <small class="textgrey">top postions</small>
+      </td>
+      <td>
+        <input class="editinput top" id="charm" type='number'>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div class="divruindiv"> Misc <br />
+          <small class="textgrey">hide/show misc bar</small>
+        </div>
+      </td>
+      <td>
+        <input class="btn checkbox editpreset rune" id="misc" type='checkbox' style="width: 20px; height: 20px">
+      </td>
+    <tr>
+      <td>
+        <small class="textgrey">left postions</small>
+      </td>
+      <td>
+        <input class="editinput left" id="misc" type='number'>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <small class="textgrey">top postions</small>
+      </td>
+      <td>
+        <input class="editinput top" id="misc" type='number'>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div class="divruindiv"> Pet And Mount <br />
+          <small class="textgrey">hide/show pet mount bar</small>
+        </div>
+      </td>
+      <td>
+        <input class="btn checkbox editpreset rune" id="petMount" type='checkbox' style="width: 20px; height: 20px">
+      </td>
+    <tr>
+      <td>
+        <small class="textgrey">left postions</small>
+      </td>
+      <td>
+        <input class="editinput left" id="petMount" type='number'>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <small class="textgrey">top postions</small>
+      </td>
+      <td>
+        <input class="editinput top" id="petMount" type='number'>
+      </td>
+    </tr>
+  </table>
+</div>`;
+(async () => {
+	add_ResetSkillBtn();
+	if (await Modal.Create(buildData, {
+			html: h
+		}, false)) {}
+	document.addEventListener('keydown', async (e) => {
+		if (e.code == 'KeyK') {
+			setTimeout(getPresetChooses, 200);
+			setTimeout(addEditSkillPresetBtn, 100);
+		}
+	});
+})();
