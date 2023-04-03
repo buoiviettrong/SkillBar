@@ -33,7 +33,6 @@ const getSkillPreset = async (name) => {
 	}
 	return skill_IDs;
 }
-
 const setCurrentSkillName = async (name) => {
 	const res = await Player.Class(_PlayerName);
 	_PlayerClass = res.type;
@@ -56,8 +55,6 @@ const loadSkillPreset = async (name) => {
 	addStyle(name, G_skillbar_element.other, 'other');
 
 }
-
-
 const sliceSkill = (s) => {
 	let src = s;
 	const baseStr = 'https://hordes.io/assets/ui/skills/';
@@ -67,11 +64,9 @@ const sliceSkill = (s) => {
 	val = val.replace('_grey', '');
 	return val;
 }
-
 const getCurrentSkillName = () => {
 	return JSON.parse(localStorage.getItem('currentSkillName'));
 }
-
 const getCurrentSkillNameByClass = async () => {
 	const res = await Player.Class(_PlayerName);
 	_PlayerClass = res.type;
@@ -79,7 +74,6 @@ const getCurrentSkillNameByClass = async () => {
 	const CurrentSkillName = getCurrentSkillName();
 	return CurrentSkillName[_PlayerClass];
 }
-
 const loadElement = async (type) => {
 	let skillbar_element = {
 		skills: [],
@@ -108,7 +102,6 @@ const loadElement = async (type) => {
 			}
 		}
 	}
-
 	switch (type) {
 		case "pet":
 			G_skillbar_element.petMount = skillbar_element.petMount;
@@ -130,15 +123,13 @@ const loadElement = async (type) => {
 			break;
 	}
 }
-
 const getSettings = () => {
 	return JSON.parse(localStorage.getItem('skillBar_Settings'));
 }
-
 const createSettings = (presetName) => {
 	let skillBar_Settings = getSettings();
 	if (skillBar_Settings == null) skillBar_Settings = {};
-        if(skillBar_Settings[_PlayerName] == null) skillBar_Settings[_PlayerName] = {};
+	if (skillBar_Settings[_PlayerName] == null) skillBar_Settings[_PlayerName] = {};
 	skillBar_Settings[_PlayerName][presetName] = {
 		skill: {
 			display: 'block'
@@ -169,7 +160,6 @@ const createSettings = (presetName) => {
 	}
 	localStorage.setItem('skillBar_Settings', JSON.stringify(skillBar_Settings));
 }
-
 // type : ['skill', 'charm', 'rune', 'pet', 'misc', 'other']
 const addStyle = (name, arr, type, flg) => {
 	let settings = getSettings();
