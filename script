@@ -37,6 +37,7 @@ const setCurrentSkillName = async (name) => {
 	const res = await Player.Class(_PlayerName);
 	_PlayerClass = res.type;
 	let CurrentSkillName = getCurrentSkillName();
+	console.log(CurrentSkillName);
 	if (CurrentSkillName == null) CurrentSkillName = {};
 	CurrentSkillName[_PlayerClass] = name;
 	localStorage.setItem('currentSkillName', JSON.stringify(CurrentSkillName));
@@ -163,7 +164,7 @@ const createSettings = (presetName) => {
 // type : ['skill', 'charm', 'rune', 'pet', 'misc', 'other']
 const addStyle = (name, arr, type, flg) => {
 	let settings = getSettings();
-	if (settings == null || settings[_PlayerName][name] == null) {
+	if (settings == null || settings[_PlayerName] == null || settings[_PlayerName][name] == null) {
 		createSettings(name);
 		settings = getSettings();
 	}
