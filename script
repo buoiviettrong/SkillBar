@@ -37,7 +37,6 @@ const setCurrentSkillName = async (name) => {
 	const res = await Player.Class(_PlayerName);
 	_PlayerClass = res.type;
 	let CurrentSkillName = getCurrentSkillName();
-	console.log(CurrentSkillName);
 	if (CurrentSkillName == null) CurrentSkillName = {};
 	CurrentSkillName[_PlayerClass] = name;
 	localStorage.setItem('currentSkillName', JSON.stringify(CurrentSkillName));
